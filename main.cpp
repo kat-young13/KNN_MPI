@@ -11,12 +11,50 @@ using namespace std;
 
 int* KNN(ArffData* dataset)
 {
+    //THIS LINE: allocates memory for the number of instances in the dataset considering size of instances
     int* predictions = (int*)malloc(dataset->num_instances() * sizeof(int));
-    
-    // float attributeValue = dataset->get_instance(instanceIndex)->get(attributeIndex)->operator float();
-    // int classValue =  dataset->get_instance(instanceIndex)->get(dataset->num_attributes() - 1)->operator int32();
+
+    for(int i = 0; i < dataset->num_instances(); i++){ //for each instance in dataset
+        float smallestDistance = FLT_MAX;
+        int smallestDistanceClass;
+
+        for(int j = 0; j < dataset->num_instances(); j++){ // look at all other instances
+            if(i==j) continue;
+            float distance = 0;
+
+            for(int k = 0; k < dataset->num_attributes() - 1; k++){ // compute distance between two instances
+                float diff = dataset->get_instance(i)->get(k)->operator float() - dataset->get_instance(j)->get(k)->operator float();
+                distance += diff * diff;
+            }
+            distance = sqrt(distance);
+
+            if(distance < smallestDistance){ // select closest one
+                smallestDistance = distance;
+                smallestDistanceClass = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32();
+            }
+        }
+        predictions[i] = smallestDistanceClass;
+    }
+
+    //int p = dataset->get_instance(200)->get(dataset->num_attributes() - 1)->operator int32();
+    //cout << dataset->num_attributes() << endl;
+    //cout << p << endl;
+
+
+
+    //cout << *predictions;
+    //cout << endl;
+    //cout << (dataset->get_instance(0));
+    //cout << (dataset->get_instance(1));
+    //cout << endl;
+    //THIS LINE: not 100% sure what it does yet. gets value of the data point?
+    //float attributeValue = dataset->get_instance(instanceIndex)->get(attributeIndex)->operator float();
+
+    //THIS LINE: similar to previous. classifies things?
+    //int classValue =  dataset->get_instance(instanceIndex)->get(dataset->num_attributes() - 1)->operator int32();
     
     // Implement KNN here, fill array of class predictions
+
     
     return predictions;
 }
@@ -28,7 +66,9 @@ int* computeConfusionMatrix(int* predictions, ArffData* dataset)
     for(int i = 0; i < dataset->num_instances(); i++) // for each instance compare the true class and predicted class
     {
         int trueClass = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32();
+        //cout << trueClass;
         int predictedClass = predictions[i];
+        //cout << predictedClass;
         
         confusionMatrix[trueClass*dataset->num_classes() + predictedClass]++;
     }
@@ -61,7 +101,7 @@ int main(int argc, char *argv[])
     struct timespec start, end;
     
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-    
+   
     int* predictions = KNN(dataset);
     int* confusionMatrix = computeConfusionMatrix(predictions, dataset);
     float accuracy = computeAccuracy(confusionMatrix, dataset);
