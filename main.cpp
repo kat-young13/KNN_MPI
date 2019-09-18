@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int* KNN(ArffData* dataset)
+int* KNN(ArffData* dataset, int k_neighbors)
 {
     //THIS LINE: allocates memory for the number of instances in the dataset considering size of instances
     int* predictions = (int*)malloc(dataset->num_instances() * sizeof(int));
@@ -19,19 +19,53 @@ int* KNN(ArffData* dataset)
         int smallestDistanceClass;
 
         for(int j = 0; j < dataset->num_instances(); j++){ // look at all other instances
+            float Arr_dist[k_neighbors];
+            int Arr_classes[k_neighbors];
+	    fill_n(Arr_dist, k_neighbors, 999999999999);
+            float largest_array_distance = 0;
+            float index_largest_distance;
+
             if(i==j) continue;
             float distance = 0;
 
             for(int k = 0; k < dataset->num_attributes() - 1; k++){ // compute distance between two instances
                 float diff = dataset->get_instance(i)->get(k)->operator float() - dataset->get_instance(j)->get(k)->operator float();
+                // this gets i, gets feature k, looks at distance from other instance j to k
                 distance += diff * diff;
             }
             distance = sqrt(distance);
 
-            if(distance < smallestDistance){ // select closest one
+	    // THIS IS INITIALIZING ARRAY AUTOMATICALLY WITH FIRST K VALUES. Get a starting point.
+	    if(j < k_neighbors){ 
+                Arr_dist[j] = distance; //put distance in
+                Arr_classes[j] = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32(); // put class in
+		if(distance > largest_array_distance){ // keep track of largest distance in array
+		    largest_array_distance = distance;
+		    index_largest_distance = j;
+		}
+            }
+
+	    //if(j > k_neighbors){
+	      //  if(distance < largest_array_distance){ // IF THERE IS A CLOSER NEIGHBOR THAT SHOULD BE IN ARRAY
+		//    Arr_dist[index_largest_distance] = distance;
+		  //  Arr_classes[index_largest_distance] = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32();
+
+		    //largest_array_distance = distance
+		   // index_largest_distance = 
+		//}
+	   // }
+
+
+            if(distance < smallestDistance){ // select closest one.. change to k
                 smallestDistance = distance;
                 smallestDistanceClass = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32();
             }
+
+
+            //for(int a = 0; a < Arr_dist.size(); a++){ // loop through array of neighbors to see if closer than any
+                
+            //}
+
         }
         predictions[i] = smallestDistanceClass;
     }
@@ -47,10 +81,10 @@ int* KNN(ArffData* dataset)
     //cout << (dataset->get_instance(0));
     //cout << (dataset->get_instance(1));
     //cout << endl;
-    //THIS LINE: not 100% sure what it does yet. gets value of the data point?
+    //THIS LINE: how to get instance value for a feature
     //float attributeValue = dataset->get_instance(instanceIndex)->get(attributeIndex)->operator float();
 
-    //THIS LINE: similar to previous. classifies things?
+    //THIS LINE: similar to previous. gets the class. casted as integer.
     //int classValue =  dataset->get_instance(instanceIndex)->get(dataset->num_attributes() - 1)->operator int32();
     
     // Implement KNN here, fill array of class predictions
@@ -102,7 +136,7 @@ int main(int argc, char *argv[])
     
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
    
-    int* predictions = KNN(dataset);
+    int* predictions = KNN(dataset, 5);
     int* confusionMatrix = computeConfusionMatrix(predictions, dataset);
     float accuracy = computeAccuracy(confusionMatrix, dataset);
     
