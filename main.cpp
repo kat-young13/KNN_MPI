@@ -62,31 +62,22 @@ int* KNN(ArffData* dataset, int k_neighbors)
 		    index_largest_distance  = new_largest_index;
 		}
 	    }
-	    //cout << Arr_dist[0] << endl;
         }
         // VOTE ON THE CLASS!!! idea: create array of size k(each slot in array corresponds to class), when class is found in array, increment index.
         int classVotes[8] = {0};  // find way to generalize the number of classes?
-	cout << sizeof(classVotes) << endl;
         for(int g = 0; g < k_neighbors; g++){ // go through each nearest neighbor
             classVotes[Arr_classes[g]] += 1;
-	    //cout << "This is the number of votes for class " << Arr_classes[g] << "....." << classVotes[Arr_classes[g]] << endl;
         }
-	//cout << classVotes[8] << endl;
 
         int max_Votes = 0;
         int max_Votes_index = 0;
 	int elements = sizeof(classVotes) / sizeof(int);
         for(int f = 0; f < elements; f++){
 	    if(classVotes[f] > max_Votes){
-		//cout <<"ClassVotes[f] : " << classVotes[f] << endl;
 	        max_Votes = classVotes[f];
-		//cout << "Assigned max_Votes : " << max_Votes << endl;
 	        max_Votes_index = f;
             }
         }
-	//cout << "The most votes was " << max_Votes << " belonging to class " << max_Votes_index << endl;
-
-        //cout << "The winning class is... " << max_Votes_index << endl;
         predictions[i] = max_Votes_index;
 
     }
