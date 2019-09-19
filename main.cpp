@@ -15,15 +15,14 @@ int* KNN(ArffData* dataset, int k_neighbors)
     int* predictions = (int*)malloc(dataset->num_instances() * sizeof(int));
 
     for(int i = 0; i < dataset->num_instances(); i++){ //for each instance in dataset
-        float smallestDistance = FLT_MAX;
-        int smallestDistanceClass;
+        //float smallestDistance = FLT_MAX;
+        //int smallestDistanceClass;
+	float Arr_dist[k_neighbors];
+        int Arr_classes[k_neighbors];
+        float largest_array_distance = 0;
+        int index_largest_distance;
 
         for(int j = 0; j < dataset->num_instances(); j++){ // look at all other instances
-            float Arr_dist[k_neighbors];
-            int Arr_classes[k_neighbors];
-	    fill_n(Arr_dist, k_neighbors, 999999999999);
-            float largest_array_distance = 0;
-            float index_largest_distance;
 
             if(i==j) continue;
             float distance = 0;
@@ -38,49 +37,35 @@ int* KNN(ArffData* dataset, int k_neighbors)
 	    // THIS IS INITIALIZING ARRAY AUTOMATICALLY WITH FIRST K VALUES. Get a starting point.
 	    if(j < k_neighbors){ 
                 Arr_dist[j] = distance; //put distance in
-                Arr_classes[j] = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32(); // put class in
+                Arr_classes[j] = dataset->get_instance(j)->get(dataset->num_attributes() - 1)->operator int32(); // put class in
 		if(distance > largest_array_distance){ // keep track of largest distance in array
 		    largest_array_distance = distance;
 		    index_largest_distance = j;
 		}
             }
 
-	    //if(j > k_neighbors){
-	      //  if(distance < largest_array_distance){ // IF THERE IS A CLOSER NEIGHBOR THAT SHOULD BE IN ARRAY
-		//    Arr_dist[index_largest_distance] = distance;
-		  //  Arr_classes[index_largest_distance] = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32();
-
-		    //largest_array_distance = distance
-		   // index_largest_distance = 
-		//}
-	   // }
-
-
-            if(distance < smallestDistance){ // select closest one.. change to k
-                smallestDistance = distance;
-                smallestDistanceClass = dataset->get_instance(i)->get(dataset->num_attributes() - 1)->operator int32();
-            }
-
-
-            //for(int a = 0; a < Arr_dist.size(); a++){ // loop through array of neighbors to see if closer than any
-                
-            //}
-
+	    if(j > k_neighbors){
+	        if(distance < largest_array_distance){ // IF THERE IS A CLOSER NEIGHBOR THAT SHOULD BE IN ARRAY
+		    Arr_dist[index_largest_distance] = distance; // change the distance, then add the class
+		    Arr_classes[index_largest_distance] = dataset->get_instance(j)->get(dataset->num_attributes() - 1)->operator int32();
+		    //FIND NEW LARGEST DISTANCE
+		    float new_largest = 0;
+		    int new_largest_index;
+		    for(int r = 0; r < sizeof(Arr_dist); r++){
+		        float temp = Arr_dist[r];
+			if(temp > new_largest){
+			    new_largest = temp;
+			    new_largest_index = r;
+			}
+ 		    }
+		    largest_array_distance = new_largest;
+		    index_largest_distance  = new_largest_index;
+		}
+	    }
+	    cout << Arr_dist[0] << endl;
         }
-        predictions[i] = smallestDistanceClass;
     }
 
-    //int p = dataset->get_instance(200)->get(dataset->num_attributes() - 1)->operator int32();
-    //cout << dataset->num_attributes() << endl;
-    //cout << p << endl;
-
-
-
-    //cout << *predictions;
-    //cout << endl;
-    //cout << (dataset->get_instance(0));
-    //cout << (dataset->get_instance(1));
-    //cout << endl;
     //THIS LINE: how to get instance value for a feature
     //float attributeValue = dataset->get_instance(instanceIndex)->get(attributeIndex)->operator float();
 
@@ -92,6 +77,8 @@ int* KNN(ArffData* dataset, int k_neighbors)
     
     return predictions;
 }
+
+
 
 int* computeConfusionMatrix(int* predictions, ArffData* dataset)
 {
