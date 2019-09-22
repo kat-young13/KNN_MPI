@@ -44,14 +44,14 @@ int* KNN(ArffData* dataset, int k_neighbors)
 		}
             }
 
-	    if(j > k_neighbors){
+	    if(j >= k_neighbors){
 	        if(distance < largest_array_distance){ // IF THERE IS A CLOSER NEIGHBOR THAT SHOULD BE IN ARRAY
 		    Arr_dist[index_largest_distance] = distance; // change the distance, then add the class
 		    Arr_classes[index_largest_distance] = dataset->get_instance(j)->get(dataset->num_attributes() - 1)->operator int32();
 		    //FIND NEW LARGEST DISTANCE
 		    float new_largest = 0;
 		    int new_largest_index;
-		    for(int r = 0; r < sizeof(Arr_dist); r++){
+		    for(int r = 0; r < k_neighbors; r++){
 		        float temp = Arr_dist[r];
 			if(temp > new_largest){
 			    new_largest = temp;
@@ -63,7 +63,7 @@ int* KNN(ArffData* dataset, int k_neighbors)
 		}
 	    }
         }
-        // VOTE ON THE CLASS!!! idea: create array of size k(each slot in array corresponds to class), when class is found in array, increment index.
+        // VOTE ON THE CLASS!!! array of size k(each slot in array corresponds to class), when class found in array, increment index.
         int classVotes[8] = {0};  // find way to generalize the number of classes?
         for(int g = 0; g < k_neighbors; g++){ // go through each nearest neighbor
             classVotes[Arr_classes[g]] += 1;
