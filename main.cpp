@@ -13,17 +13,15 @@ int* KNN(ArffData* dataset, int k_neighbors)
 {
     //THIS LINE: allocates memory for the number of instances in the dataset considering size of instances
     int* predictions = (int*)malloc(dataset->num_instances() * sizeof(int));
-
     for(int i = 0; i < dataset->num_instances(); i++){ //for each instance in dataset
         //float smallestDistance = FLT_MAX;
         //int smallestDistanceClass;
-	float Arr_dist[k_neighbors];
-        int Arr_classes[k_neighbors];
+        float* Arr_dist =(float*)calloc(k_neighbors, sizeof(float));
+        int* Arr_classes=(int*)calloc(k_neighbors, sizeof(int));
         float largest_array_distance = 0;
         int index_largest_distance;
 
         for(int j = 0; j < dataset->num_instances(); j++){ // look at all other instances
-
             if(i==j) continue;
             float distance = 0;
 
@@ -64,15 +62,14 @@ int* KNN(ArffData* dataset, int k_neighbors)
 	    }
         }
         // VOTE ON THE CLASS!!! array of size k(each slot in array corresponds to class), when class found in array, increment index.
-        int classVotes[8] = {0};  // find way to generalize the number of classes?
+        int* classVotes =(int*)calloc(dataset->num_classes(), sizeof(int));
         for(int g = 0; g < k_neighbors; g++){ // go through each nearest neighbor
             classVotes[Arr_classes[g]] += 1;
         }
 
         int max_Votes = 0;
         int max_Votes_index = 0;
-	int elements = sizeof(classVotes) / sizeof(int);
-        for(int f = 0; f < elements; f++){
+        for(int f = 0; f < dataset->num_classes(); f++){
 	    if(classVotes[f] > max_Votes){
 	        max_Votes = classVotes[f];
 	        max_Votes_index = f;
@@ -136,7 +133,6 @@ int main(int argc, char *argv[])
     ArffParser parser(argv[1]);
     ArffData *dataset = parser.parse();
     struct timespec start, end;
-    
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
    
     int* predictions = KNN(dataset, 5);
