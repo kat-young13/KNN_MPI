@@ -19,7 +19,8 @@ int* KNN(ArffData* dataset, int k_neighbors, int rank, int numtasks)
     int chunk_size = dataset->num_instances() / (numtasks);
     int* predictions_from_rank =(int*)calloc(chunk_size, sizeof(int));
 
-    if(rank >= 0){
+
+    if(rank >= 0){ 
        for(int i = (rank)*chunk_size; i < (rank+1)*chunk_size && i < dataset->num_instances(); i++){ //for each instance in chunk
 	float* Arr_dist =(float*)calloc(k_neighbors, sizeof(float));
 	int* Arr_classes=(int*)calloc(k_neighbors, sizeof(int));
@@ -88,9 +89,70 @@ int* KNN(ArffData* dataset, int k_neighbors, int rank, int numtasks)
 
     // see whats in predictions array being returned
      if(rank == 0) {
-       /*for( int i = 0; i < (dataset->num_instances()); i++){
-	cout << predictions[i];
-	}  */
+       if( chunk_size*numtasks < dataset->num_instances()){
+	 int remainder = dataset->num_instances() % (chunk_size * numtasks);
+	 float* Arr_dist_rem =(float*)calloc(k_neighbors, sizeof(float));
+	 int* Arr_classes_rem =(int*)calloc(k_neighbors, sizeof(int));
+	 float largest_array_distance_rem = 0;
+	 int index_largest_distance_rem = 0;
+
+	 for(int i = dataset->num_instances() - remainder - 1; i < dataset->num_instances(); i++){	   
+	   for(int j = 0; j < dataset->num_instances(); j++){ // look at all other instances                                                          
+	     if(i==j) continue;
+	     float distance = 0;
+	     for(int k = 0; k < dataset->num_attributes() - 1; k++){ // compute distance between two instances                                        
+	       float diff = dataset->get_instance(i)->get(k)->operator float() - dataset->get_instance(j)->get(k)->operator float();
+	       distance += diff * diff;
+	     }
+	     distance = sqrt(distance);
+
+	     // THIS IS INITIALIZING ARRAY AUTOMATICALLY WITH FIRST K VALUES. Get a starting point.                                                   
+	     if(j < k_neighbors){
+	       Arr_dist_rem[j] = distance; //put distance in                                                                                          
+	       Arr_classes_rem[j] = dataset->get_instance(j)->get(dataset->num_attributes() - 1)->operator int32(); // put class in            
+	       if(distance > largest_array_distance_rem){ // keep track of largest distance in array                                                     
+		 largest_array_distance_rem = distance;
+		 index_largest_distance_rem = j;
+	       }
+	     }
+
+	     if(j >= k_neighbors){
+	       if(distance < largest_array_distance_rem){ // IF THERE IS A CLOSER NEIGHBOR THAT SHOULD BE IN ARRAY                   
+		 Arr_dist_rem[index_largest_distance_rem] = distance; // change the distance, then add the class                                      
+		 Arr_classes_rem[index_largest_distance_rem] = dataset->get_instance(j)->get(dataset->num_attributes() - 1)->operator int32();
+		 //FIND NEW LARGEST DISTANCE                                                                                                          
+		 float new_largest_rem = 0;
+		 int new_largest_index_rem;
+		 for(int r = 0; r < k_neighbors; r++){
+		   float temp = Arr_dist_rem[r];
+		   if(temp > new_largest_rem){
+		     new_largest_rem = temp;
+		     new_largest_index_rem = r;
+		   }
+		 }
+	       }
+
+	       int* classVotes_rem =(int*)calloc(dataset->num_classes(), sizeof(int));
+	       for(int g = 0; g < k_neighbors; g++){ // go through each nearest neighbor                                                                      
+		 classVotes_rem[Arr_classes_rem[g]] += 1;
+	       }
+
+	       int max_Votes_rem = 0;
+	       int max_Votes_index_rem = 0;
+	       for(int f = 0; f < dataset->num_classes(); f++){
+		 if(classVotes_rem[f] > max_Votes_rem){
+		   max_Votes_rem = classVotes_rem[f];
+		   max_Votes_index_rem = f;
+		 }
+	       }
+	       predictions[i] = max_Votes_index_rem;
+	     }
+	   }
+
+
+
+	 }
+       }
      return predictions;
    }
     else {

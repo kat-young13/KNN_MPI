@@ -76,18 +76,7 @@ int* KNN(ArffData* dataset, int k_neighbors)
             }
         }
         predictions[i] = max_Votes_index;
-
     }
-
-    //THIS LINE: how to get instance value for a feature
-    //float attributeValue = dataset->get_instance(instanceIndex)->get(attributeIndex)->operator float();
-
-    //THIS LINE: similar to previous. gets the class. casted as integer.
-    //int classValue =  dataset->get_instance(instanceIndex)->get(dataset->num_attributes() - 1)->operator int32();
-    
-    // Implement KNN here, fill array of class predictions
-
-    
     return predictions;
 }
 
